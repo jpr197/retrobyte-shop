@@ -8,7 +8,13 @@
 FROM php:8.3-cli
 
 # pdo_sqlite is required by this app (includes/db.php uses PDO+SQLite).
-RUN docker-php-ext-install pdo_sqlite
+# The PHP extension installer needs SQLite's development headers
+# present first, or the compile step fails -- that's what
+# libsqlite3-dev provides.
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        libsqlite3-dev \
+    && rm -rf /var/lib/apt/lists/* \
+    && docker-php-ext-install pdo_sqlite
 
 WORKDIR /var/www/html
 COPY . /var/www/html
